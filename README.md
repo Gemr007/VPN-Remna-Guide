@@ -141,4 +141,16 @@ ssh USER@IP_SERVER
 <img width="764" height="567" alt="SSHTerminal" src="https://github.com/user-attachments/assets/4e3aa85b-1c2c-4081-9079-ab4c07e4c179" />
 
 
-2.Через специальные
+
+
+
+2.Через специальные SSH-клиенты
+Рекомендую этот способ. Потому что вам не придется по тысячи раз вводить ssh root@2.53543.1.5432 и т.д. Вместо этого заполнили один раз IP, Username, Password. И подключайтесь сколько угодно раз.
+Есть много таких программ: Putty, MobaXterm, SmarTTY, Termius.
+Лично я использую Termius: выглядит красиво, да и бесплатного доступа хватает за глаза.
+Скачать можно [тут](https://termius.com/index.html).
+
+Как только скачали программу, нажимаете на кнопку **New Host** и в правом меню, в обведенных строках вводите соответственно IP сервера, имя пользователя и пароль
+
+<img width="329" height="626" alt="Termius" src="https://github.com/user-attachments/assets/5a3c5d33-9a2a-4208-87bd-4534a0423e5e" />
+
