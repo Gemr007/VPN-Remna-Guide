@@ -80,3 +80,37 @@
 | CNAME      | node.example.com  | example.com      | DNS only      |
 
 Если Панель и нода на разных серверах, то:
+| Тип записи | Имя               | Значение                | Статус прокси |
+|------------|-------------------|-------------------------|---------------|
+| A          | example.com       | panel_server_ip         | DNS only      |
+| CNAME      | panel.example.com | example.com             | DNS only      |
+| CNAME      | sub.example.com   | example.com             | DNS only      |
+| A          | node.example.com  | node_server_ip          | DNS only      |
+
+---
+#### Платный, но зато со своим именем (рекомендуется)
+Вообще этот вариант самый наилучший из-за того, что можно выбрать свое имя. А также можно перевести на сервера CLoudfare, на которых все записи будут вноситься и пинговаться сразу, после того как нажмете на кнопку SAVE.
+Купиь можно где-угодно: я, например, покупал на [SpaceWeb](https://sweb.ru/). 
+Также можно купить на [LuxHOST](https://luxhost.cc/), [TimeWeb](https://timeweb.cloud/), и еще где-угодно. 
+Покупаем и заполняем так:
+
+| Тип записи | Имя               | Значение         | Статус прокси |
+|------------|-------------------|------------------|---------------|
+| A          | example.com       | your_server_ip   | DNS only      |
+| CNAME      | panel.example.com | example.com      | DNS only      |
+| CNAME      | sub.example.com   | example.com      | DNS only      |
+| CNAME      | node.example.com  | example.com      | DNS only      |
+
+Если Панель и нода на разных серверах, то:
+| Тип записи | Имя               | Значение                | Статус прокси |
+|------------|-------------------|-------------------------|---------------|
+| A          | example.com       | panel_server_ip         | DNS only      |
+| CNAME      | panel.example.com | example.com             | DNS only      |
+| CNAME      | sub.example.com   | example.com             | DNS only      |
+| A          | node.example.com  | node_server_ip          | DNS only      |
+
+Про перевод домена на Cloudfare можно [почитать здесь](https://wiki.bisquit.host/cloudflare/transfer-domain).
+
+---
+
+### 2.Ус
