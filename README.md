@@ -196,4 +196,87 @@ remnawave_reverse
 Паенль и нода подняты.
 
 
-XHTT
+### XHTTP
+В Default профиль вставить: 
+```
+    {
+      "tag": "XHTTP",
+      "listen": "/dev/shm/xrxh.socket,0666",
+      "protocol": "vless",
+      "settings": {
+        "clients": [],
+        "fallbacks": [],
+        "decryption": "none"
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "xhttpSettings": {
+          "mode": "auto",
+          "path": "/xhttppath/",
+          "extra": {
+            "noSSEHeader": true,
+            "xPaddingBytes": "100-1000",
+            "scMaxBufferedPosts": 30,
+            "scMaxEachPostBytes": 1000000,
+            "scStreamUpServerSecs": "20-80"
+          }
+        }
+      }
+    }
+```
+
+2. На сервере ноды:
+```
+cd /opt/remnanode && docker restart remnanode && nano /opt/remnawave/nginx.conf
+```
+в конец файла вставить:
+```
+    location /xhttppath/ {
+        client_max_body_size 0;
+        proxy_set_header X-Real-IP $proxy_protocol_addr;
+        proxy_set_header X-Forwarded-For $proxy_protocol_addr;
+        proxy_set_header Host $host;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_http_version 1.1;
+        client_body_timeout 5m;
+        proxy_read_timeout 315s;
+        proxy_send_timeout 5m;
+        proxy_pass http://unix:/dev/shm/xrxh.socket;
+    }
+```
+потом прописать:
+```
+docker exec remnawave-nginx nginx -t && docker restart remnawave-nginx
+```
+
+В хосте вставить:
+```
+{
+  "xmux": {
+    "cMaxReuseTimes": 0,
+    "maxConcurrency": "16-32",
+    "maxConnections": 0,
+    "hKeepAlivePeriod": 0,
+    "hMaxRequestTimes": "600-900",
+    "hMaxReusableSecs": "1800-3000"
+  },
+  "noGRPCHeader": false,
+  "xPaddingBytes": "100-1000",
+  "scMaxEachPostBytes": 1000000,
+  "scMinPostsIntervalMs": 30,
+  "scStreamUpServerSecs": "20-80"
+}
+```
+
+```
+docker restart remnanode
+```
