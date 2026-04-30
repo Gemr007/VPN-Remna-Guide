@@ -239,7 +239,7 @@ remnawave_reverse
 
 2. На сервере ноды:
 ```
-cd /opt/remnanode && docker restart remnanode && nano /opt/remnawave/nginx.conf
+cd /opt/remnanode && docker restart remnanode && nano /opt/remnanode/nginx.conf
 ```
 в конец файла вставить:
 ```
