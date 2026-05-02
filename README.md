@@ -263,6 +263,13 @@ docker exec remnawave-nginx nginx -t && docker restart remnawave-nginx
 ```
 
 В хосте вставить:
+
+<img width="1345" height="533" alt="XHTTP_HOST" src="https://github.com/user-attachments/assets/f9286202-af50-4ce0-96b5-1aec6f05330e" />
+
+
+В расширенных настройках хоста, найдите кнопку **xHTTP**
+
+пропишите в открывшемся окне следующее:
 ```
 {
   "xmux": {
@@ -280,7 +287,199 @@ docker exec remnawave-nginx nginx -t && docker restart remnawave-nginx
   "scStreamUpServerSecs": "20-80"
 }
 ```
-
+потом прописать:
 ```
 docker restart remnanode
 ```
+
+
+### Hysteria2
+Для **Hysteria2** вам нужно было получить ssl сертификат с помощью ACME HTTP-01.
+На сервере ноды:
+```
+sed -i 's|      - /dev/shm:/dev/shm:rw$|      - /dev/shm:/dev/shm:rw\n      - /etc/letsencrypt/live/DOMAIN/fullchain.pem:/var/lib/remnawave/configs/xray/ssl/cert.pem:ro\n      - /etc/letsencrypt/live/DOMAIN/privkey.pem:/var/lib/remnawave/configs/xray/ssl/cert.key:ro|g' /opt/remnanode/docker-compose.yml	  
+```
+> Замените DOMAIN на ваш домен ноды
+
+Затем:
+```
+nano /etc/letsencrypt/renewal-hooks/deploy/restart-remnanode.sh
+```
+
+И пропишите в открывшемся файле:
+```
+#!/bin/bash
+```
+> Нажмите CTRL+O -> Enter -> CTRL+X
+
+Потом запустите следующие команды:
+```
+cd /opt/remnanode && docker compose restart remnanode
+chmod +x /etc/letsencrypt/renewal-hooks/deploy/restart-remnanode.sh
+cd /opt/remnanode
+docker compose down && docker compose up -d && sleep 5 && docker exec -it remnanode ls -la /var/lib/remnawave/configs/xray/ssl/ 
+ufw allow 443/udp
+```
+> Можно скопировать все команды разом, вставить и они запустятся все по очереди
+
+В панели переходим: Профили -> нажимаем на зеленый плюс, задаем имя (например Hysteria2) и открываем -> удаляем готовый конфиг и вставляем свой:
+
+```
+{
+  "log": {
+    "loglevel": "none"
+  },
+  "inbounds": [
+    {
+      "tag": "HYSTERIA-BBR",
+      "port": 443,
+      "listen": "0.0.0.0",
+      "protocol": "hysteria",
+      "settings": {
+        "clients": [],
+        "version": 2
+      },
+      "streamSettings": {
+        "network": "hysteria",
+        "security": "tls",
+        "finalmask": {
+          "quicParams": {
+            "debug": false,
+            "congestion": "bbr"
+          }
+        },
+        "tlsSettings": {
+          "alpn": [
+            "h3"
+          ],
+          "certificates": [
+            {
+              "keyFile": "/var/lib/remnawave/configs/xray/ssl/cert.key",
+              "certificateFile": "/var/lib/remnawave/configs/xray/ssl/cert.pem"
+            }
+          ]
+        },
+        "hysteriaSettings": {
+          "version": 2
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "DIRECT",
+      "protocol": "freedom"
+    },
+    {
+      "tag": "BLOCK",
+      "protocol": "blackhole"
+    }
+  ],
+  "routing": {
+    "rules": [
+      {
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "BLOCK"
+      },
+      {
+        "domain": [
+          "geosite:private"
+        ],
+        "outboundTag": "BLOCK"
+      },
+      {
+        "protocol": [
+          "bittorrent"
+        ],
+        "outboundTag": "BLOCK"
+      }
+    ]
+  }
+}{
+  "log": {
+    "loglevel": "none"
+  },
+  "inbounds": [
+    {
+      "tag": "HYSTERIA-BBR",
+      "port": 443,
+      "listen": "0.0.0.0",
+      "protocol": "hysteria",
+      "settings": {
+        "clients": [],
+        "version": 2
+      },
+      "streamSettings": {
+        "network": "hysteria",
+        "security": "tls",
+        "finalmask": {
+          "quicParams": {
+            "debug": false,
+            "congestion": "bbr"
+          }
+        },
+        "tlsSettings": {
+          "alpn": [
+            "h3"
+          ],
+          "certificates": [
+            {
+              "keyFile": "/var/lib/remnawave/configs/xray/ssl/cert.key",
+              "certificateFile": "/var/lib/remnawave/configs/xray/ssl/cert.pem"
+            }
+          ]
+        },
+        "hysteriaSettings": {
+          "version": 2
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "DIRECT",
+      "protocol": "freedom"
+    },
+    {
+      "tag": "BLOCK",
+      "protocol": "blackhole"
+    }
+  ],
+  "routing": {
+    "rules": [
+      {
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "BLOCK"
+      },
+      {
+        "domain": [
+          "geosite:private"
+        ],
+        "outboundTag": "BLOCK"
+      },
+      {
+        "protocol": [
+          "bittorrent"
+        ],
+        "outboundTag": "BLOCK"
+      }
+    ]
+  }
+}
+```
+
+Нажимаем **Сохранить**
+
+Переходим в хосты и заполняем как на фото:
+<img width="1559" height="633" alt="HysteriaSetup" src="https://github.com/user-attachments/assets/a6b0faa3-757a-4a6d-9d75-e09a7917ef57" />
+
+Присваивем конфиг ноде, добавляем во внутренний сквад
+
+Финальный штрих на фото:
+<img width="2048" height="1140" alt="Json" src="https://github.com/user-attachments/assets/f6e8e445-61dd-486c-a9cc-3b70a5b252d4" />
+
+Помните Hysteria2 работает только в клиентах INCY, HAPP
