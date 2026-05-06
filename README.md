@@ -267,7 +267,8 @@ docker exec remnawave-nginx nginx -t && docker restart remnawave-nginx
 
 В разделе **Хосты** создайте хост как на скриншоте:
 
-![Настройка XHTTP хоста](screenshots/xhttp_host.png)
+![Настройка XHTTP хоста](<img width="1234" height="587" alt="XHTTP" src="https://github.com/user-attachments/assets/dcb27503-7752-4ea8-894d-8da5a8b46ce4" />
+)
 
 В **расширенных настройках хоста** → кнопка **xHTTP** → вставьте:
 
@@ -401,12 +402,14 @@ docker exec -it remnanode ls -la /var/lib/remnawave/configs/xray/ssl/
 
 Заполните хост как на скриншоте:
 
-![Настройка Hysteria2 хоста](screenshots/hysteria2_host.png)
+![Настройка Hysteria2 хоста](<img width="1559" height="633" alt="XHTTP_HOST" src="https://github.com/user-attachments/assets/6577f569-9a5e-4ac3-b8e4-fba5fc498671" />
+)
 
 Присвойте профиль ноде и добавьте во внутренний сквад.  
 Финальные настройки JSON:
 
-![Финальные настройки JSON](screenshots/hysteria2_json.png)
+![Финальные настройки JSON](<img width="2048" height="1140" alt="Json" src="https://github.com/user-attachments/assets/73271567-a576-4116-9c03-d5bdc6005d37" />
+)
 
 > [!NOTE]
 > Hysteria2 работает только в клиентах **INCY** и **HAPP**.
