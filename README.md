@@ -434,7 +434,7 @@ docker exec -it remnanode ls -la /var/lib/remnawave/configs/xray/ssl/
 > Видеогайд по теме: [Каскадный VPN. Серверный Роутинг Remnawave](https://youtu.be/ehHMtiT6LwA?si=Rt8FsCI92X9gvEsc)  
 > Официальная документация: [docs.rw/docs/learn/server-routing](https://docs.rw/docs/learn/server-routing/)
 
-Серверный роутинг — это когда пользователь подключается к одному серверу (например `RU-001`), а панель сама решает, куда направить его трафик дальше: российские сайты — напрямую, всё остальное — через другой сервер (`DE-001`).
+Серверный роутинг — это когда пользователь подключается к одному серверу (например NL-нода), а панель сама решает, куда направить его трафик дальше: российские сайты — напрямую, всё остальное — через второй сервер (DE-нода).
 
 > [!IMPORTANT]
 > Remnawave автоматически очищает массив `clients` в серверных конфигах — это не баг. Именно поэтому нельзя просто вписать credentials напрямую в конфиг: для роутинга используется **сервисный пользователь**.
@@ -442,14 +442,14 @@ docker exec -it remnanode ls -la /var/lib/remnawave/configs/xray/ssl/
 Схема которую мы настроим:
 
 ```
-Пользователь → RU-001 (VLESS)
-                    ├─ RU-сайты  →  DIRECT (выходит с RU-001)
-                    └─ Всё остальное → DE-001 (Shadowsocks, порт 9999)
+Пользователь → NL-нода (VLESS)
+                    ├─ RU-сайты  →  DIRECT (выходит с NL)
+                    └─ Всё остальное → DE-нода (Shadowsocks, порт 9999)
 ```
 
 ---
 
-### Шаг 1 — Создать Bridge Profile для DE-001
+### Шаг 1 — Создать Bridge Profile для DE-ноды
 
 Перейдите: **Профили** → нажмите **+** → назовите `Bridge Profile` → вставьте конфиг:
 
@@ -477,7 +477,12 @@ docker exec -it remnanode ls -la /var/lib/remnawave/configs/xray/ssl/
         { "tag": "DIRECT", "protocol": "freedom" },
         { "tag": "BLOCK", "protocol": "blackhole" }
     ],
-    "routing": { "rules": [] }
+    "routing": {
+        "rules": [
+            { "ip": ["geoip:private"], "outboundTag": "BLOCK" },
+            { "protocol": ["bittorrent"], "outboundTag": "BLOCK" }
+        ]
+    }
 }
 ```
 
@@ -487,9 +492,9 @@ docker exec -it remnanode ls -la /var/lib/remnawave/configs/xray/ssl/
 
 ### Шаг 2 — Создать Internal Squad
 
-Перейдите в **Internal Squad** → нажмите **+** (создать новый сквад) → включите в нём только инбаунд `BRIDGE_DE_IN` из `Bridge Profile`.
+Перейдите в **Internal Squad** → нажмите **+** → включите в нём только инбаунд `BRIDGE_DE_IN` из `Bridge Profile`.
 
-Затем откройте карточку ноды `DE-001` и убедитесь, что этот инбаунд и профиль там включены.
+Затем откройте карточку DE-ноды и убедитесь, что этот инбаунд и профиль там включены.
 
 ---
 
@@ -499,10 +504,10 @@ docker exec -it remnanode ls -la /var/lib/remnawave/configs/xray/ssl/
 
 Обязательные настройки:
 - **Лимит трафика** — без ограничений (0)
-- **Дата истечения** — где-то в районе 2099 года
+- **Дата истечения** — 2099 год
 - **Сквад** — активируйте созданный выше сквад
 
-После создания откройте карточку пользователя → **More Actions** → **Detailed Info** → прокрутите вниз и скопируйте **SS Password** (это пароль для Shadowsocks-подключения между серверами).
+После создания: карточка пользователя → **More Actions** → **Detailed Info** → прокрутите вниз → скопируйте **SS Password**.
 
 | Протокол инбаунда | Что копировать |
 |---|---|
@@ -512,78 +517,48 @@ docker exec -it remnanode ls -la /var/lib/remnawave/configs/xray/ssl/
 
 ---
 
-### Шаг 4 — Настроить публичный профиль на RU-001
+### Шаг 4 — Настроить публичный профиль NL-ноды
 
-Откройте ваш основной профиль (тот, по которому подключаются пользователи). Нас интересуют секции `outbounds` и `routing.rules`.
-
-#### Добавить outbound на DE-001
-
-```json
-{
-    "tag": "SS_OUTBOUND_TO_DE",
-    "protocol": "shadowsocks",
-    "settings": {
-        "servers": [
-            {
-                "address": "IP или домен DE-001",
-                "password": "ПАРОЛЬ ИЗ ШАГА 3",
-                "port": 9999,
-                "level": 0,
-                "method": "chacha20-ietf-poly1305"
-            }
-        ]
-    }
-}
-```
-
-> [!WARNING]
-> Для Shadowsocks используйте **только** метод `chacha20-ietf-poly1305` — Remnawave поддерживает исключительно его.
-
----
-
-### Шаг 5 — Собрать финальный конфиг
-
-Вот полная конфигурация публичного профиля с роутингом:
+Добавьте Shadowsocks outbound и правила роутинга в профиль, по которому подключаются пользователи:
 
 ```json
 {
     "log": { "loglevel": "none" },
     "inbounds": [
         {
-            "tag": "PUBLIC_RU_INBOUND",
+            "tag": "NL_INBOUND",
             "port": 443,
-            "listen": "0.0.0.0",
             "protocol": "vless",
             "settings": { "clients": [], "decryption": "none" },
             "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic"] },
             "streamSettings": {
-                "network": "raw",
+                "network": "tcp",
                 "security": "reality",
                 "realitySettings": {
-                    "target": "ВАШЕ ЗНАЧЕНИЕ",
+                    "dest": "example.com:443",
                     "show": false,
                     "xver": 0,
-                    "shortIds": [""],
-                    "privateKey": "ВАШ ПРИВАТНЫЙ КЛЮЧ",
-                    "serverNames": ["ВАШИ SERVERNAMES"]
+                    "shortIds": ["ваш_short_id"],
+                    "privateKey": "ваш_приватный_ключ",
+                    "serverNames": ["example.com"]
                 }
             }
         }
     ],
     "outbounds": [
-        { "protocol": "freedom", "tag": "DIRECT" },
-        { "protocol": "blackhole", "tag": "BLOCK" },
+        { "tag": "DIRECT", "protocol": "freedom" },
+        { "tag": "BLOCK", "protocol": "blackhole" },
         {
             "tag": "SS_OUTBOUND_TO_DE",
             "protocol": "shadowsocks",
             "settings": {
                 "servers": [
                     {
-                        "address": "IP или домен DE-001",
-                        "password": "ПАРОЛЬ ИЗ ШАГА 3",
+                        "address": "IP DE-ноды",
                         "port": 9999,
                         "level": 0,
-                        "method": "chacha20-ietf-poly1305"
+                        "method": "chacha20-ietf-poly1305",
+                        "password": "ПАРОЛЬ ИЗ ШАГА 3"
                     }
                 ]
             }
@@ -597,13 +572,19 @@ docker exec -it remnanode ls -la /var/lib/remnawave/configs/xray/ssl/
             { "ip": ["geoip:ru"], "outboundTag": "DIRECT" },
             { "domain": ["geosite:category-ru"], "outboundTag": "DIRECT" },
             {
-                "inboundTag": ["PUBLIC_RU_INBOUND"],
+                "inboundTag": ["NL_INBOUND"],
                 "outboundTag": "SS_OUTBOUND_TO_DE"
             }
         ]
     }
 }
 ```
+
+> [!WARNING]
+> Для Shadowsocks используйте **только** метод `chacha20-ietf-poly1305` — Remnawave поддерживает исключительно его.
+
+> [!TIP]
+> Если у вас несколько инбаундов — просто перечислите все их теги в массиве `inboundTag` последнего правила: `["NL_INBOUND", "NL_XHTTP", "NL_8443"]`.
 
 ---
 
@@ -616,158 +597,9 @@ Xray применяет правила **сверху вниз**, останав
 | 1 | IP из `geoip:private` | BLOCK (локальные сети) |
 | 2 | Домен из `geosite:private` | BLOCK |
 | 3 | Трафик BitTorrent | BLOCK |
-| 4 | IP из `geoip:ru` | DIRECT (выход с RU-001) |
-| 5 | Домен из `geosite:category-ru` | DIRECT (выход с RU-001) |
-| 6 | Всё остальное из `PUBLIC_RU_INBOUND` | Туннель на DE-001 |
-
-> [!TIP]
-> Вместо Shadowsocks в качестве транзитного протокола можно использовать и **VLESS** — структура аналогичная, отличается только секция `outbound`.
-
----
-
-### Вариант: VLESS + SelfSteal Reality
-
-Если на вашей ноде настроен **SelfSteal** (Reality со своим nginx вместо внешнего сайта) и вы хотите использовать **VLESS** как транзитный протокол вместо Shadowsocks — конфиг будет выглядеть так.
-
-#### Отличия от базового варианта
-
-**1. SelfSteal в `realitySettings`**
-
-Вместо внешнего домена `dest` указывает на Unix-сокет вашего nginx. `xver: 1` включает PROXY protocol — nginx видит реальный IP клиента.
-
-```json
-"realitySettings": {
-    "dest": "/dev/shm/nginx.sock",
-    "show": false,
-    "xver": 1,
-    "spiderX": "",
-    "shortIds": ["ваш_short_id"],
-    "privateKey": "ваш_приватный_ключ",
-    "serverNames": ["домен_ноды"]
-}
-```
-
-> [!TIP]
-> На сервере DE-001 откройте 9999 порт:
-> ```
-> ufw allow 9999/tcp
-> ```
-
-**2. VLESS outbound вместо Shadowsocks**
-
-На Bridge Profile ноды DE-001 тоже должен быть **VLESS inbound** на порту 9999 (а не Shadowsocks).
-
-```json
-{
-    "tag": "VLESS_OUTBOUND_TO_DE",
-    "protocol": "vless",
-    "settings": {
-        "vnext": [
-            {
-                "address": "IP DE-001",
-                "port": 9999,
-                "users": [
-                    {
-                        "id": "UUID сервисного пользователя",
-                        "level": 0,
-                        "encryption": "none"
-                    }
-                ]
-            }
-        ]
-    },
-    "streamSettings": { "network": "tcp" }
-}
-```
-
-#### Полный конфиг публичного профиля (VLESS + SelfSteal)
-
-```json
-{
-    "log": { "loglevel": "none" },
-    "inbounds": [
-        {
-            "tag": "PUBLIC_RU_INBOUND",
-            "port": 443,
-            "protocol": "vless",
-            "settings": { "clients": [], "decryption": "none" },
-            "sniffing": {
-                "enabled": true,
-                "destOverride": ["http", "tls", "quic"]
-            },
-            "streamSettings": {
-                "network": "tcp",
-                "security": "reality",
-                "realitySettings": {
-                    "dest": "/dev/shm/nginx.sock",
-                    "show": false,
-                    "xver": 1,
-                    "spiderX": "",
-                    "shortIds": ["ваш_short_id"],
-                    "privateKey": "ваш_приватный_ключ",
-                    "serverNames": ["домен_ноды"]
-                }
-            }
-        }
-    ],
-    "outbounds": [
-        { "tag": "DIRECT", "protocol": "freedom" },
-        { "tag": "BLOCK", "protocol": "blackhole" },
-        {
-            "tag": "VLESS_OUTBOUND_TO_DE",
-            "protocol": "vless",
-            "settings": {
-                "vnext": [
-                    {
-                        "address": "IP DE-001",
-                        "port": 9999,
-                        "users": [
-                            {
-                                "id": "UUID сервисного пользователя",
-                                "level": 0,
-                                "encryption": "none"
-                            }
-                        ]
-                    }
-                ]
-            },
-            "streamSettings": { "network": "tcp" }
-        }
-    ],
-    "routing": {
-        "rules": [
-            {
-                "ip": [
-                    "10.0.0.0/8",
-                    "172.16.0.0/12",
-                    "192.168.0.0/16",
-                    "127.0.0.0/8",
-                    "100.64.0.0/10"
-                ],
-                "outboundTag": "BLOCK"
-            },
-            { "domain": ["ext:mygeosite.dat:private"], "outboundTag": "BLOCK" },
-            { "protocol": ["bittorrent"], "outboundTag": "BLOCK" },
-            { "ip": ["ext:myip.dat:direct"], "outboundTag": "DIRECT" },
-            { "domain": ["ext:mygeosite.dat:category-ru"], "outboundTag": "DIRECT" },
-            {
-                "inboundTag": ["PUBLIC_RU_INBOUND"],
-                "outboundTag": "VLESS_OUTBOUND_TO_DE"
-            }
-        ]
-    }
-}
-```
-
-> [!TIP]
-> На сервере DE-001 откройте 9999 порт:
-> ```
-> ufw allow 9999/tcp
-> ```
-
-
-
----
+| 4 | IP из `geoip:ru` | DIRECT (выход с NL-ноды) |
+| 5 | Домен из `geosite:category-ru` | DIRECT (выход с NL-ноды) |
+| 6 | Всё остальное из всех инбаундов | Туннель на DE-ноду |
 
 ## 6. Защита серверов
 
