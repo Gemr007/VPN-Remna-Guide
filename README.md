@@ -1,276 +1,277 @@
-# Установка Панели Remnawave удобнейшим скриптом от EGAMESAPI
-В данном гайде будет описаны следующие действия:
-- Установка панели Remnawave
-* Настройка подключений
-+ Настройка транспорта XHTTP с маскировкой под TLS
-- Настройка протокола Hysteria2
-* Серверный роутинг
-+ Защита сервера
----
-## Оглавление
-1. Подготовка
-   - Покупка VPS/VDS сервера
-   - Покупка домена
-     - Перевод домена на сервера Cloudfare
-2. Установка панели
-   - Панель и нода на одном сервере
-   - Панель и нода на разных серверах
-3. Создание пользователей и первое подключение
-4. Дополнительные функции
-   - Добавление других нод в панель
-   - XHTTP
-   - Hysteria2
-   - Серверный роутинг
-   - Happ Routing
-5. Защита серверов
-   
----
+# 🛡️ Remnawave VPN — Полное руководство по установке
 
-### 1. Подготовка
-#### Сервер
-Для развертывания своего VPN, понадобится сервер за границей (предпочтительно в Нидерландах или в Финляндии). Хостингов, которые предоставляют вирутальный сервер за границей, хоть отбавляй.
-Несколько таких, которые можно оплатить РУ-картой и подсети которых не забанены РКНом, порекомендовать могу:
-1. [Node Host](https://t.me/nodehost_bot?start=4677) - Да, это телеграмм бот, есть два канала: 1-гигабитный и 10-гигабитный. Доступны локации: Германия, Щвеция, Финляндия, Польша, Нидерланды. Впринципе нормальный, но учтите что на Германии, ютуб с рекламой.
-2. [Hip.Hosting](https://hip.hosting/?code=8038f2c25ad5281fabbb) - Тоже нормальный. Много локаций, все я их конечно не успел потестить, но Россия кстати там просто офигенная
-3. [EXPRESSHOST](https://t.me/ExpressHost_Bot?start=ref_vJJK1zUM) - тоже ТГ-бот. Иногда бывают отвалы, но пока тоже держится
-4. [если вы не доверяете мне и хотите поискать другие хостинги](https://lolz.live/forums/763/) - большая тема на LolzTeam со всякими другими хостингами. Впринципе там очень много хороших, так и плохих, поэтому иногда почитывайте отзывы к ним тоже.
+[![Remnawave](https://img.shields.io/badge/Panel-Remnawave-6366f1?style=for-the-badge)](https://docs.rw)
+[![Xray](https://img.shields.io/badge/Core-Xray-blue?style=for-the-badge)](https://github.com/XTLS/Xray-core)
+[![eGamesAPI](https://img.shields.io/badge/Script-eGamesAPI-green?style=for-the-badge)](https://github.com/eGamesAPI/remnawave-reverse-proxy)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
- ---
-
-#### Отступление
-Вообще вся инфраструктура Remnawave состоит из двух объектов: Панели и Нода
-**Нода** - на нее и ставится само Xray ядро с помошью которого и будет иметь доступ в интернет.
-**Панель** - это так называемый "центр" управления всеми нодами, конфигами, подключениями.
-В [официальном руководстве к панели](https://docs.rw/docs/install/requirements) написан гайд по установке Панели и ноды на разных серверах. 
-
-То есть вам надо купить два сервера: 
-1. **Под панель**, как заявляется в документации, сервер должен иметь 2 ядра, 2 гигабайта оперативной памяти, 20 гигабайт дискового пространства (HDD или SSD неважно, вы скорость не заметите). ![Характеристики панели.](<img width="1256" height="518" alt="{3F1495A5-3F42-4085-841C-067B8014045F}" src="https://github.com/user-attachments/assets/607dd166-f585-4083-8c6d-a4ec082583ea" />)
-2. **Под ноду**, а вот тут с характеристиками всё неодназначно. Вроде в доках написано что надо иметь 1 ядро, 1 гигабайт RAM, 10 гигов на диске. Но по факту здесь всё зависит оттого, сколько пользователей у вас будет.
- - Если вы берете для себя и друзей (примерно 10-15 человек), то берите 1/1/10(ядра/RAM/диск) конфигурацию.
- - ![Характеристики ноды.](<img width="1236" height="480" alt="{14251438-DD08-43DA-9833-CDB72ED71DD0}" src="https://github.com/user-attachments/assets/55b64213-f54c-4e1f-83bf-b98c5ac58290" />)
-
-Но скрипт EGAMES умеет устанавливать панель и ноду на один сервер. И если вы берете для себя, не для всякой комерции, то предпочтение отдавайте этому
-Самые минимальные характеристики сервера для этой авантюры следующие: 1 ядро, 2 гигабайта RAM, 15 гигабайтов на диске. Да, при такой конфигурации, вылетать ничего не будет, но и в сотку проц тоже может иногда долбиться.
-Поэтому рекомендую все таки потратить чуть больше деняг на 2/2/20. Ну а если денег не жалко, то купите все таки два сервака, в дальнейшем будущем, вам даже настраивать дополнительные фишки будет легче.
-
-Все с отступлением покончено.
+> Гайд по развёртыванию собственного VPN на базе панели **Remnawave** + **Xray** с помощью установочного скрипта от **eGamesAPI**.
 
 ---
 
-### 2. Домен
-Тут у вас есть два пути:
-1. Домен на халяву
-2. Платный, но зато со своим именем (рекомендуется)
----
-#### Домен на халяву
-Переходим на сайт [FreeDNS](https://freedns.afraid.org/), регистрируемся и переходим во вкладку **Registry** или **Domain Registry**. Выбираем любой понравившейся домен или любой короткий домен, не забывая смотреть на столбец **Status**, потому что там пишется бесплатный ли домен или платный. Public - означает что бесплатный, Private - платный, на сайте поддерживается сортировка по этим пунктам.
-Выбрали? - Молодец
-Теперь в меню **Add a new subdomain** пишем как на примере снизу:
+## 📋 Содержание
 
-
-![Freedns](https://github.com/Gemr007/VPN-Remna-Guide/blob/main/Freedns.png?raw=true)
-
-Таким образом мы должны добавить 4 записи. 
-Для тех, кто выбрал Панель и ноду на одном сервере вы должны создать записи по следующему примеру:
-| Тип записи | Имя               | Значение         | Статус прокси |
-|------------|-------------------|------------------|---------------|
-| A          | example.com       | your_server_ip   | DNS only      |
-| CNAME      | panel.example.com | example.com      | DNS only      |
-| CNAME      | sub.example.com   | example.com      | DNS only      |
-| CNAME      | node.example.com  | example.com      | DNS only      |
-
-Если Панель и нода на разных серверах, то:
-| Тип записи | Имя               | Значение                | Статус прокси |
-|------------|-------------------|-------------------------|---------------|
-| A          | example.com       | panel_server_ip         | DNS only      |
-| CNAME      | panel.example.com | example.com             | DNS only      |
-| CNAME      | sub.example.com   | example.com             | DNS only      |
-| A          | node.example.com  | node_server_ip          | DNS only      |
-
-Ждем 10-15 минут пока записи внесутся. Чтобы проверить на внесенность, откройте терминал вашей ОС и напишите туда:
-```
-ping subdomain.domain.com
-```
-Если в выводе, вы видите IP вашего сервера, то внеслось. Если нет, то ждите еще.
+1. [Подготовка](#1-подготовка)
+   - [Выбор сервера](#11-выбор-сервера)
+   - [Архитектура: панель и нода](#12-архитектура-панель-и-нода)
+2. [Домен](#2-домен)
+   - [Бесплатный домен (FreeDNS)](#21-бесплатный-домен-freedns)
+   - [Платный домен + Cloudflare](#22-платный-домен--cloudflare)
+3. [Установка панели](#3-установка-панели)
+   - [Подключение к серверу](#31-подключение-к-серверу)
+   - [Панель и нода на одном сервере](#32-панель-и-нода-на-одном-сервере)
+   - [Панель и нода на разных серверах](#33-панель-и-нода-на-разных-серверах)
+4. [Дополнительные транспорты](#4-дополнительные-транспорты)
+   - [XHTTP](#41-xhttp)
+   - [Hysteria2](#42-hysteria2)
+5. [Серверный роутинг](#5-серверный-роутинг)
+6. [Защита серверов](#6-защита-серверов)
 
 ---
 
-#### Платный, но зато со своим именем (рекомендуется)
-Вообще этот вариант самый наилучший из-за того, что можно выбрать свое имя. А также можно перевести на сервера CLoudfare, на которых все записи будут вноситься и пинговаться сразу, после того как нажмете на кнопку SAVE.
-Купиь можно где-угодно: я, например, покупал на [SpaceWeb](https://sweb.ru/). 
-Также можно купить на [LuxHOST](https://luxhost.cc/), [TimeWeb](https://timeweb.cloud/), и еще где-угодно. 
-Покупаем и заполняем так:
+## 1. Подготовка
 
-| Тип записи | Имя               | Значение         | Статус прокси |
-|------------|-------------------|------------------|---------------|
-| A          | example.com       | your_server_ip   | DNS only      |
-| CNAME      | panel.example.com | example.com      | DNS only      |
-| CNAME      | sub.example.com   | example.com      | DNS only      |
-| CNAME      | node.example.com  | example.com      | DNS only      |
+### 1.1 Выбор сервера
 
-Если Панель и нода на разных серверах, то:
-| Тип записи | Имя               | Значение                | Статус прокси |
-|------------|-------------------|-------------------------|---------------|
-| A          | example.com       | panel_server_ip         | DNS only      |
-| CNAME      | panel.example.com | example.com             | DNS only      |
-| CNAME      | sub.example.com   | example.com             | DNS only      |
-| A          | node.example.com  | node_server_ip          | DNS only      |
+Для развёртывания VPN понадобится VPS/VDS **за рубежом** (Нидерланды, Финляндия, Германия — хороший выбор).  
+Ниже несколько хостингов, которые принимают российские карты и чьи подсети не заблокированы РКН:
 
-Про перевод домена на Cloudfare можно [почитать здесь](https://wiki.bisquit.host/cloudflare/transfer-domain).
+| Хостинг | Локации | Комментарий |
+|---|---|---|
+| [Node Host](https://t.me/nodehost_bot?start=4677) | DE, SE, FI, PL, NL | Telegram-бот; есть 1G и 10G каналы. На DE — YouTube с рекламой |
+| [Hip.Hosting](https://hip.hosting/?code=8038f2c25ad5281fabbb) | Много локаций | Стабильный, широкий выбор |
+| [EXPRESSHOST](https://t.me/ExpressHost_Bot?start=ref_vJJK1zUM) | Базовые EU | Telegram-бот; бывают редкие отвалы |
+| [LolzTeam каталог](https://lolz.live/forums/763/) | Разные | Большой список — читайте отзывы перед покупкой |
 
 ---
 
-### 2.Установка панели
-Для начала нужно подключиться к серверу: для этого есть два способа.
-1. С помощью терминала ОС. 
-Откройте терминал (если вы на винде 10/7 или у вас нет просто терминала, то можно использовать Powershell или Командную Строку).
-Пропишите следующую команду:
-```
-ssh USER@IP_SERVER
-```
-> USER - это имя пользователя, которое выдал вам хостинг при покупки VPS/VDS. Обычно это root.
+### 1.2 Архитектура: панель и нода
 
-> IP_SERVER - это Ip вашего сервера.
+Инфраструктура Remnawave состоит из двух компонентов:
 
-В следующем окне у вас спросят, насчет сохранения данного ssh подключения: пишиите **yes** строчными английскими буквами. Затем вас спросят пароль, хостинг тоже вам его выдаст, просто скопируйте и вставьте.
+- **Панель** — центр управления нодами, конфигами и подключениями.
+- **Нода** — сервер с Xray-ядром, через который идёт трафик пользователей.
+
+Скрипт eGamesAPI умеет устанавливать **оба компонента на один сервер** — это удобно для личного использования (10–15 человек).
+
+#### Минимальные характеристики серверов
+
+| Конфигурация | CPU | RAM | Диск |
+|---|---|---|---|
+| Панель + нода (1 сервер) | 1–2 ядра | 2 ГБ | 15–20 ГБ |
+| Только панель | 2 ядра | 2 ГБ | 20 ГБ |
+| Только нода (до ~15 чел.) | 1 ядро | 1 ГБ | 10 ГБ |
+
 > [!TIP]
-> Пароль показываться не будет. Это нормально и служат это для безопасности.
-Вы подключены!
-
-
-<img width="764" height="567" alt="SSHTerminal" src="https://github.com/user-attachments/assets/4e3aa85b-1c2c-4081-9079-ab4c07e4c179" />
-
-
-
-
-
-2.Через специальные SSH-клиенты
-Рекомендую этот способ. Потому что вам не придется по тысячи раз вводить ssh root@2.53543.1.5432 и т.д. Вместо этого заполнили один раз IP, Username, Password. И подключайтесь сколько угодно раз.
-Есть много таких программ: Putty, MobaXterm, SmarTTY, Termius.
-Лично я использую Termius: выглядит красиво, да и бесплатного доступа хватает за глаза.
-Скачать можно [тут](https://termius.com/index.html).
-
-Как только скачали программу, нажимаете на кнопку **New Host** и в правом меню, в обведенных строках вводите соответственно IP сервера, имя пользователя и пароль
-
-<img width="329" height="626" alt="Termius" src="https://github.com/user-attachments/assets/5a3c5d33-9a2a-4208-87bd-4534a0423e5e" />
-
-
-И нажимаете на **Connect**
+> Если планируете больше 15 пользователей или хотите удобнее настраивать дополнительные транспорты — берите два сервера сразу.
 
 ---
 
-#### Панель и нода на одном сервере
-1.Если у вас имя пользователя не root, то вам нужно залогиниться на него с помошью комманды:
+## 2. Домен
+
+### 2.1 Бесплатный домен (FreeDNS)
+
+1. Зарегистрируйтесь на [FreeDNS](https://freedns.afraid.org/).
+2. Перейдите во вкладку **Registry** / **Domain Registry**.
+3. Выберите любой домен со статусом **Public** (бесплатный).
+4. В меню **Add a new subdomain** создайте DNS-записи:
+
+![Пример добавления субдомена в FreeDNS](Freedns.png)
+
+#### Панель и нода на **одном** сервере
+
+| Тип | Имя | Значение | Прокси |
+|---|---|---|---|
+| A | `example.com` | `your_server_ip` | DNS only |
+| CNAME | `panel.example.com` | `example.com` | DNS only |
+| CNAME | `sub.example.com` | `example.com` | DNS only |
+| CNAME | `node.example.com` | `example.com` | DNS only |
+
+#### Панель и нода на **разных** серверах
+
+| Тип | Имя | Значение | Прокси |
+|---|---|---|---|
+| A | `example.com` | `panel_server_ip` | DNS only |
+| CNAME | `panel.example.com` | `example.com` | DNS only |
+| CNAME | `sub.example.com` | `example.com` | DNS only |
+| A | `node.example.com` | `node_server_ip` | DNS only |
+
+> [!NOTE]
+> После добавления записей подождите 10–15 минут. Проверка:
+> ```bash
+> ping subdomain.example.com
+> ```
+> Если в выводе виден IP вашего сервера — записи применились.
+
+---
+
+### 2.2 Платный домен + Cloudflare
+
+Платный домен даёт своё имя и возможность использовать Cloudflare, где DNS-записи применяются мгновенно.
+
+Купить домен можно на: [SpaceWeb](https://sweb.ru/), [LuxHOST](https://luxhost.cc/), [TimeWeb](https://timeweb.cloud/) и др.
+
+Таблицы DNS-записей — те же, что в разделе выше.
+
+Инструкция по переносу домена на Cloudflare: [bisquit.host/cloudflare/transfer-domain](https://wiki.bisquit.host/cloudflare/transfer-domain).
+
+---
+
+## 3. Установка панели
+
+### 3.1 Подключение к серверу
+
+Есть два способа:
+
+**Способ 1 — через терминал ОС** (PowerShell, CMD, Terminal):
+
+```bash
+ssh root@IP_SERVER
 ```
+
+При первом подключении введите `yes`, затем вставьте пароль (он не отображается — это нормально).
+
+![Подключение через SSH-терминал](screenshots/ssh_terminal.png)
+
+**Способ 2 — SSH-клиент (рекомендуется)**
+
+Один раз вводите IP / логин / пароль — и подключаетесь в один клик.  
+Популярные варианты: **Termius** (красивый UI, бесплатного функционала хватает), MobaXterm, Putty, SmarTTY.
+
+Скачать Termius: [termius.com](https://termius.com/)
+
+Нажмите **New Host**, заполните IP, Username, Password и нажмите **Connect**.
+
+![Настройка Termius](screenshots/termius.png)
+
+---
+
+### 3.2 Панель и нода на одном сервере
+
+```bash
+# 1. Если вы не root — переключитесь
 sudo -i
-```
-2.Теперь обновим пакеты на сервере:
-```
+
+# 2. Обновите пакеты
 apt update && apt upgrade -y
-```
-3.Установив, теперь запускаем сам скрипт от EGames:
-```
+
+# 3. Запустите скрипт eGamesAPI
 bash <(curl -Ls https://raw.githubusercontent.com/eGamesAPI/remnawave-reverse-proxy/refs/heads/main/install_remnawave.sh)
 ```
-4.Выбираем язык и вводим цифру, соответствующую номеру языка
 
-5.Перемещаемся по следующему пути: **1.Установка компонентов Remnawave** (цифра 1 на клавиатуре -> Enter) --> **1. Установить панель и ноду на один сервер** --> **1.Nginx**. И ждем пока пока не появиться поле **Введите домен панели**
+4. Выберите язык → **1. Установка компонентов Remnawave** → **1. Установить панель и ноду на один сервер** → **1. Nginx**
+5. Введите домены панели, подписки и ноды.
+6. Выберите **ACME HTTP-01**, укажите email.
 
-6.Вводим домен панели, подписки и ноды. Затем выбераем **ACME HTTP-01** и вводим свою почту. Если спросят еще раз это выюираем также **ACME HTTP-01** и почту свою вбить не забываем.
+По завершении установки скрипт выведет:
 
-7.В конце вам сервер выдаст следующее:
 ```
 =================================================
                УСТАНОВКА ЗАВЕРШЕНА!
 =================================================
 Панель доступна по адресу:
-https://ваш домен панели.ru
+https://panel.example.com
 -------------------------------------------------
-Для входа в панель используйте следующие данные:
 Логин: LOGIN
 Пароль: Password
 -------------------------------------------------
-Для повторного запуска менеджера используйте команду:
+Для повторного запуска менеджера:
 remnawave_reverse
 ```
-После завершения установки скрипт отобразит уникальный URL-адрес для входа в панель управления.
-Обязательно сохраните этот URL-адрес. Он содержит секретный ключ, необходимый для доступа.
 
-8.Переходим по этому URL адресу в браузер
-Панель и нода подняты.
+> [!WARNING]
+> Сохраните URL панели и секретный ключ. Без них войти не получится.
 
+Перейдите по ссылке в браузер — панель готова к работе.
 
-### XHTTP
-В Default профиль вставить: 
-```
-    {
-      "tag": "XHTTP",
-      "listen": "/dev/shm/xrxh.socket,0666",
-      "protocol": "vless",
-      "settings": {
-        "clients": [],
-        "fallbacks": [],
-        "decryption": "none"
-      },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": [
-          "http",
-          "tls",
-          "quic"
-        ]
-      },
-      "streamSettings": {
-        "network": "xhttp",
-        "xhttpSettings": {
-          "mode": "auto",
-          "path": "/xhttppath/",
-          "extra": {
-            "noSSEHeader": true,
-            "xPaddingBytes": "100-1000",
-            "scMaxBufferedPosts": 30,
-            "scMaxEachPostBytes": 1000000,
-            "scStreamUpServerSecs": "20-80"
-          }
-        }
+---
+
+### 3.3 Панель и нода на разных серверах
+
+Следуйте [официальной документации Remnawave](https://docs.rw/docs/install/requirements).  
+Скрипт eGamesAPI также поддерживает раздельную установку — выберите соответствующий пункт меню на шаге 4.
+
+---
+
+## 4. Дополнительные транспорты
+
+### 4.1 XHTTP
+
+XHTTP — транспорт поверх TLS/HTTPS с маскировкой под обычный веб-трафик.
+
+#### Шаг 1 — Добавить inbound в Default профиль панели
+
+```json
+{
+  "tag": "XHTTP",
+  "listen": "/dev/shm/xrxh.socket,0666",
+  "protocol": "vless",
+  "settings": {
+    "clients": [],
+    "fallbacks": [],
+    "decryption": "none"
+  },
+  "sniffing": {
+    "enabled": true,
+    "destOverride": ["http", "tls", "quic"]
+  },
+  "streamSettings": {
+    "network": "xhttp",
+    "xhttpSettings": {
+      "mode": "auto",
+      "path": "/xhttppath/",
+      "extra": {
+        "noSSEHeader": true,
+        "xPaddingBytes": "100-1000",
+        "scMaxBufferedPosts": 30,
+        "scMaxEachPostBytes": 1000000,
+        "scStreamUpServerSecs": "20-80"
       }
     }
+  }
+}
 ```
 
-2. На сервере ноды:
+#### Шаг 2 — Добавить location в nginx.conf на ноде
+
+```bash
+cd /opt/remnanode && docker restart remnanode
+nano /opt/remnanode/nginx.conf
 ```
-cd /opt/remnanode && docker restart remnanode && nano /opt/remnanode/nginx.conf
+
+Вставьте в конец файла:
+
+```nginx
+location /xhttppath/ {
+    client_max_body_size 0;
+    proxy_set_header X-Real-IP $proxy_protocol_addr;
+    proxy_set_header X-Forwarded-For $proxy_protocol_addr;
+    proxy_set_header Host $host;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_http_version 1.1;
+    client_body_timeout 5m;
+    proxy_read_timeout 315s;
+    proxy_send_timeout 5m;
+    proxy_pass http://unix:/dev/shm/xrxh.socket;
+}
 ```
-в конец файла вставить:
-```
-    location /xhttppath/ {
-        client_max_body_size 0;
-        proxy_set_header X-Real-IP $proxy_protocol_addr;
-        proxy_set_header X-Forwarded-For $proxy_protocol_addr;
-        proxy_set_header Host $host;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
-        proxy_http_version 1.1;
-        client_body_timeout 5m;
-        proxy_read_timeout 315s;
-        proxy_send_timeout 5m;
-        proxy_pass http://unix:/dev/shm/xrxh.socket;
-    }
-```
-потом прописать:
-```
+
+Затем перезапустите nginx:
+
+```bash
 docker exec remnawave-nginx nginx -t && docker restart remnawave-nginx
 ```
 
-В хосте вставить:
+#### Шаг 3 — Настроить хост в панели
 
-<img width="1345" height="533" alt="XHTTP_HOST" src="https://github.com/user-attachments/assets/f9286202-af50-4ce0-96b5-1aec6f05330e" />
+В разделе **Хосты** создайте хост как на скриншоте:
 
+![Настройка XHTTP хоста](screenshots/xhttp_host.png)
 
-В расширенных настройках хоста, найдите кнопку **xHTTP**
+В **расширенных настройках хоста** → кнопка **xHTTP** → вставьте:
 
-пропишите в открывшемся окне следующее:
-```
+```json
 {
   "xmux": {
     "cMaxReuseTimes": 0,
@@ -287,48 +288,65 @@ docker exec remnawave-nginx nginx -t && docker restart remnawave-nginx
   "scStreamUpServerSecs": "20-80"
 }
 ```
-потом прописать:
-```
+
+#### Шаг 4 — Перезапустить ноду
+
+```bash
 docker restart remnanode
 ```
 
+---
 
-### Hysteria2
-Для **Hysteria2** вам нужно было получить ssl сертификат с помощью ACME HTTP-01.
-На сервере ноды:
-```
-sed -i 's|      - /dev/shm:/dev/shm:rw$|      - /dev/shm:/dev/shm:rw\n      - /etc/letsencrypt/live/DOMAIN/fullchain.pem:/var/lib/remnawave/configs/xray/ssl/cert.pem:ro\n      - /etc/letsencrypt/live/DOMAIN/privkey.pem:/var/lib/remnawave/configs/xray/ssl/cert.key:ro|g' /opt/remnanode/docker-compose.yml	  
-```
-> Замените DOMAIN на ваш домен ноды
+### 4.2 Hysteria2
 
-Затем:
+> [!IMPORTANT]
+> Для Hysteria2 необходим TLS-сертификат, полученный через **ACME HTTP-01** при установке панели.
+
+#### Шаг 1 — Подключить сертификаты к контейнеру ноды
+
+```bash
+# Замените DOMAIN на ваш домен ноды (например node.example.com)
+sed -i 's|      - /dev/shm:/dev/shm:rw$|      - /dev/shm:/dev/shm:rw\n      - /etc/letsencrypt/live/DOMAIN/fullchain.pem:/var/lib/remnawave/configs/xray/ssl/cert.pem:ro\n      - /etc/letsencrypt/live/DOMAIN/privkey.pem:/var/lib/remnawave/configs/xray/ssl/cert.key:ro|g' /opt/remnanode/docker-compose.yml
 ```
+
+#### Шаг 2 — Создать хук автообновления сертификата
+
+```bash
 nano /etc/letsencrypt/renewal-hooks/deploy/restart-remnanode.sh
 ```
 
-И пропишите в открывшемся файле:
-```
+Вставьте в файл:
+
+```bash
 #!/bin/bash
-```
-> Нажмите CTRL+O -> Enter -> CTRL+X
-
-Потом запустите следующие команды:
-```
 cd /opt/remnanode && docker compose restart remnanode
+```
+
+Затем нажмите `CTRL+O` → `Enter` → `CTRL+X`.
+
+#### Шаг 3 — Открыть порт и поднять контейнер
+
+```bash
 chmod +x /etc/letsencrypt/renewal-hooks/deploy/restart-remnanode.sh
-cd /opt/remnanode
-docker compose down && docker compose up -d && sleep 5 && docker exec -it remnanode ls -la /var/lib/remnawave/configs/xray/ssl/ 
 ufw allow 443/udp
+cd /opt/remnanode
+docker compose down && docker compose up -d
+sleep 5
+docker exec -it remnanode ls -la /var/lib/remnawave/configs/xray/ssl/
 ```
-> Можно скопировать все команды разом, вставить и они запустятся все по очереди
 
-В панели переходим: Профили -> нажимаем на зеленый плюс, задаем имя (например Hysteria2) и открываем -> удаляем готовый конфиг и вставляем свой:
+> [!TIP]
+> Все команды можно скопировать разом — они выполнятся последовательно.
 
-```
+Убедитесь, что в выводе последней команды видны файлы `cert.pem` и `cert.key`.
+
+#### Шаг 4 — Создать профиль Hysteria2 в панели
+
+Перейдите: **Профили** → нажмите **+** → задайте имя `Hysteria2` → удалите дефолтный конфиг и вставьте:
+
+```json
 {
-  "log": {
-    "loglevel": "none"
-  },
+  "log": { "loglevel": "none" },
   "inbounds": [
     {
       "tag": "HYSTERIA-BBR",
@@ -349,9 +367,7 @@ ufw allow 443/udp
           }
         },
         "tlsSettings": {
-          "alpn": [
-            "h3"
-          ],
+          "alpn": ["h3"],
           "certificates": [
             {
               "keyFile": "/var/lib/remnawave/configs/xray/ssl/cert.key",
@@ -366,120 +382,58 @@ ufw allow 443/udp
     }
   ],
   "outbounds": [
-    {
-      "tag": "DIRECT",
-      "protocol": "freedom"
-    },
-    {
-      "tag": "BLOCK",
-      "protocol": "blackhole"
-    }
+    { "tag": "DIRECT", "protocol": "freedom" },
+    { "tag": "BLOCK", "protocol": "blackhole" }
   ],
   "routing": {
     "rules": [
-      {
-        "ip": [
-          "geoip:private"
-        ],
-        "outboundTag": "BLOCK"
-      },
-      {
-        "domain": [
-          "geosite:private"
-        ],
-        "outboundTag": "BLOCK"
-      },
-      {
-        "protocol": [
-          "bittorrent"
-        ],
-        "outboundTag": "BLOCK"
-      }
-    ]
-  }
-}{
-  "log": {
-    "loglevel": "none"
-  },
-  "inbounds": [
-    {
-      "tag": "HYSTERIA-BBR",
-      "port": 443,
-      "listen": "0.0.0.0",
-      "protocol": "hysteria",
-      "settings": {
-        "clients": [],
-        "version": 2
-      },
-      "streamSettings": {
-        "network": "hysteria",
-        "security": "tls",
-        "finalmask": {
-          "quicParams": {
-            "debug": false,
-            "congestion": "bbr"
-          }
-        },
-        "tlsSettings": {
-          "alpn": [
-            "h3"
-          ],
-          "certificates": [
-            {
-              "keyFile": "/var/lib/remnawave/configs/xray/ssl/cert.key",
-              "certificateFile": "/var/lib/remnawave/configs/xray/ssl/cert.pem"
-            }
-          ]
-        },
-        "hysteriaSettings": {
-          "version": 2
-        }
-      }
-    }
-  ],
-  "outbounds": [
-    {
-      "tag": "DIRECT",
-      "protocol": "freedom"
-    },
-    {
-      "tag": "BLOCK",
-      "protocol": "blackhole"
-    }
-  ],
-  "routing": {
-    "rules": [
-      {
-        "ip": [
-          "geoip:private"
-        ],
-        "outboundTag": "BLOCK"
-      },
-      {
-        "domain": [
-          "geosite:private"
-        ],
-        "outboundTag": "BLOCK"
-      },
-      {
-        "protocol": [
-          "bittorrent"
-        ],
-        "outboundTag": "BLOCK"
-      }
+      { "ip": ["geoip:private"], "outboundTag": "BLOCK" },
+      { "domain": ["geosite:private"], "outboundTag": "BLOCK" },
+      { "protocol": ["bittorrent"], "outboundTag": "BLOCK" }
     ]
   }
 }
 ```
 
-Нажимаем **Сохранить**
+Нажмите **Сохранить**.
 
-Переходим в хосты и заполняем как на фото:
-<img width="1559" height="633" alt="HysteriaSetup" src="https://github.com/user-attachments/assets/a6b0faa3-757a-4a6d-9d75-e09a7917ef57" />
+#### Шаг 5 — Настроить хост
 
-Присваивем конфиг ноде, добавляем во внутренний сквад
+Заполните хост как на скриншоте:
 
-Финальный штрих на фото:
-<img width="2048" height="1140" alt="Json" src="https://github.com/user-attachments/assets/f6e8e445-61dd-486c-a9cc-3b70a5b252d4" />
+![Настройка Hysteria2 хоста](screenshots/hysteria2_host.png)
 
-Помните Hysteria2 работает только в клиентах INCY, HAPP
+Присвойте профиль ноде и добавьте во внутренний сквад.  
+Финальные настройки JSON:
+
+![Финальные настройки JSON](screenshots/hysteria2_json.png)
+
+> [!NOTE]
+> Hysteria2 работает только в клиентах **INCY** и **HAPP**.
+
+---
+
+## 5. Серверный роутинг
+
+> ⚠️ Раздел в разработке. Следите за обновлениями репозитория.
+
+---
+
+## 6. Защита серверов
+
+> ⚠️ Раздел в разработке. Следите за обновлениями репозитория.
+
+---
+
+## 🤝 Участие в проекте
+
+Нашли ошибку или хотите дополнить гайд? Открывайте [Issue](../../issues) или Pull Request — буду рад.
+
+---
+
+<div align="center">
+
+Сделано с ❤️ для русскоязычного комьюнити  
+[⬆️ Наверх](#-remnawave-vpn--полное-руководство-по-установке)
+
+</div>
