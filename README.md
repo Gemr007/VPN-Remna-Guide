@@ -131,7 +131,7 @@ ssh root@IP_SERVER
 
 При первом подключении введите `yes`, затем вставьте пароль (он не отображается — это нормально).
 
-![Подключение через SSH-терминал](screenshots/ssh_terminal.png)
+![Успешное подключение по SSH](SSH.png)
 
 **Способ 2 — SSH-клиент (рекомендуется)**
 
@@ -142,7 +142,7 @@ ssh root@IP_SERVER
 
 Нажмите **New Host**, заполните IP, Username, Password и нажмите **Connect**.
 
-![Настройка Termius](screenshots/termius.png)
+![Настройка нового хоста в Termius](Termius.png)
 
 ---
 
