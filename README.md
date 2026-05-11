@@ -273,6 +273,8 @@ location /xhttppath/ {
 ```
 Должно получиться так:
 ![nginx](https://github.com/Gemr007/VPN-Remna-Guide/blob/main/nginxconfXHTTP.png)
+
+
 Затем перезапустите nginx:
 
 ```bash
