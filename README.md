@@ -254,7 +254,7 @@ cd /opt/remnanode && docker restart remnanode
 nano /opt/remnanode/nginx.conf
 ```
 
-Вставьте в конец файла:
+Вставьте после строчки ```add_header X-Robots-Tag "noindex, nofollow, noarchive, nosnippet, noimageindex" always;```:
 
 ```nginx
 location /xhttppath/ {
