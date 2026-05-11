@@ -271,7 +271,8 @@ location /xhttppath/ {
     proxy_pass http://unix:/dev/shm/xrxh.socket;
 }
 ```
-
+Должно получиться так:
+![nginx](https://github.com/Gemr007/VPN-Remna-Guide/blob/main/nginxconfXHTTP.png)
 Затем перезапустите nginx:
 
 ```bash
