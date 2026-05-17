@@ -164,17 +164,17 @@ Termius удобнее терминала: один раз сохраняете 
 ### 3.2 Панель и нода на одном сервере
 
 
-# 1. Если вы не root — переключитесь
+##### 1. Если вы не root — переключитесь
 ```bash
 sudo -i
 ```
 
-# 2. Обновите пакеты
+##### 2. Обновите пакеты
 ```bash
 apt update && apt upgrade -y
 ```
 
-# 3. Запустите скрипт eGamesAPI
+##### 3. Запустите скрипт eGamesAPI
 ```bash
 bash <(curl -Ls https://raw.githubusercontent.com/eGamesAPI/remnawave-reverse-proxy/refs/heads/main/install_remnawave.sh)
 ```
@@ -210,17 +210,17 @@ remnawave_reverse
 
 #### Сервер для панели(web-админки)
 
-# 1. Если вы не root — переключитесь
+##### 1. Если вы не root — переключитесь
 ```bash
 sudo -i
 ```
 
-# 2. Обновите пакеты
+##### 2. Обновите пакеты
 ```bash
 apt update && apt upgrade -y
 ```
 
-# 3. Запустите скрипт eGamesAPI
+##### 3. Запустите скрипт eGamesAPI
 ```bash
 bash <(curl -Ls https://raw.githubusercontent.com/eGamesAPI/remnawave-reverse-proxy/refs/heads/main/install_remnawave.sh)
 ```
@@ -252,17 +252,17 @@ remnawave_reverse
 
 #### Сервер ноды
 
-# 1. Если вы не root — переключитесь
+##### 1. Если вы не root — переключитесь
 ```bash
 sudo -i
 ```
 
-# 2. Обновите пакеты
+##### 2. Обновите пакеты
 ```bash
 apt update && apt upgrade -y
 ```
 
-# 3. Запустите скрипт eGamesAPI
+##### 3. Запустите скрипт eGamesAPI
 ```bash
 bash <(curl -Ls https://raw.githubusercontent.com/eGamesAPI/remnawave-reverse-proxy/refs/heads/main/install_remnawave.sh)
 ```
